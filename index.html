@@ -2,54 +2,6 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Hook Race VR</title>
+  <title>Hookin' Madness</title>
   <link rel="stylesheet" href="css/style.css">
-  <script src="https://aframe.io"></script>
-  <!-- Networking Libraries -->
-  <script src="https://unpkg.com"></script>
-  <script src="https://cdnjs.cloudflare.com"></script>
-  <!-- Load our custom logic -->
-  <script src="js/components.js"></script>
-  <script src="js/multiplayer.js"></script>
-</head>
-<body>
-  <!-- Mobile UI Overlay -->
-  <div id="ui-container">
-    <div id="coin-display">Coins: <span id="balance">0</span></div>
-    <button id="shop-btn">Shop</button>
-  </div>
-
-  <a-scene networked-scene="room: hooks; adapter: wseasyrtc; serverURL: https://nafs.glitch.me">
-    <a-assets>
-      <!-- Player Avatar Template -->
-      <template id="player-tpl">
-        
-          <a-sphere class="head" scale="0.2 0.3 0.2" color="#555"></a-sphere>
-          
-        
-      </template>
-    </a-assets>
-
-    <!-- The Environment -->
-    <a-sky color="#050505"></a-sky>
-    
-    
-
-    <!-- The Ramp & Grapple Blocks -->
-    
-      <a-plane rotation="-45 0 0" position="0 0 -20" width="20" height="100" color="#222"></a-plane>
-      <!-- Generated Blocks (Add more as needed) -->
-      <a-box class="clickable" position="0 2 -5" color="gold" grapple-point></a-box>
-      <a-box class="clickable" position="-3 8 -12" color="gold" grapple-point></a-box>
-      <a-box class="clickable" position="4 15 -20" color="gold" grapple-point></a-box>
-    
-
-    <!-- Local Player Rig -->
-    
-      <a-camera id="main-cam" look-controls>
-        <a-cursor raycaster="objects: .clickable" color="white"></a-cursor>
-      </a-camera>
-    
-  </a-scene>
-</body>
-</html>
+  <script src="
