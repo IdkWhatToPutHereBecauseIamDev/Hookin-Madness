@@ -2,4 +2,4 @@
 A vr game
 
 
-# I SCRAPPED THIS
+# I QUIT MAKING THIS
