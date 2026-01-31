@@ -1,0 +1,6 @@
+.screen {
+  position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+  z-index: 9999; background: #111; color: white;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+}
+#gameScene { transition: opacity 1s ease; }
