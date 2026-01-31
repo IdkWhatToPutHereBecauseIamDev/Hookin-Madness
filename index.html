@@ -3,172 +3,38 @@
 <head>
   <meta charset="utf-8">
   <title>Hookin' Madness</title>
+  <link rel="stylesheet" href="style.css">
   <script src="https://aframe.io"></script>
   <script src="https://unpkg.com"></script>
   <script src="https://cdnjs.cloudflare.com"></script>
-  
-  <style>
-    body { margin: 0; font-family: 'Segoe UI', sans-serif; background: #000; }
-    .screen {
-      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-      background: linear-gradient(to bottom, #111, #333);
-      color: white; display: flex; flex-direction: column; 
-      justify-content: center; align-items: center; z-index: 2000;
-    }
-    #game-ui {
-      position: fixed; top: 15px; left: 15px; z-index: 1000; color: gold;
-      font-weight: bold; text-shadow: 2px 2px #000; pointer-events: none;
-    }
-    button {
-      background: #ef2d5e; color: white; border: none; padding: 15px 30px;
-      margin: 10px; border-radius: 50px; font-size: 1.2rem; cursor: pointer;
-    }
-    .hidden { display: none !important; }
-  </style>
 </head>
 <body>
-
-  <!-- TITLE SCREEN -->
+  <!-- Overlay UI -->
   <div id="title-screen" class="screen">
-    <h1 style="font-size: 3rem; margin-bottom: 0;">HOOKIN' MADNESS</h1>
-    <p>Race to the top or fall to the bottom.</p>
-    <button onclick="startGame('multiplayer')">MULTIPLAYER RACE</button>
-    <button onclick="startGame('bot')">PRACTICE VS BOT</button>
-    <button onclick="toggleShop(true)">SKIN SHOP</button>
+    <h1>HOOKIN' MADNESS</h1>
+    <button onclick="app.start('multiplayer')">MULTIPLAYER</button>
+    <button onclick="app.start('bot')">VS BOT</button>
   </div>
 
-  <!-- SHOP SCREEN -->
-  <div id="shop-screen" class="screen hidden">
-    <h2>SKIN SHOP</h2>
-    <p>Coins: <span class="coin-val">0</span></p>
-    <button onclick="buySkin('gold', 100)" style="background: gold; color: black;">GOLD HOOK (100c)</button>
-    <button onclick="buySkin('neon', 250)" style="background: #0ff; color: black;">NEON HOOK (250c)</button>
-    <button onclick="toggleShop(false)">BACK</button>
-  </div>
-
-  <!-- IN-GAME HUD -->
-  <div id="game-ui" class="hidden">
-    COINS: <span class="coin-val">0</span> | MODE: <span id="mode-text">---</span>
-  </div>
-
-  <a-scene id="scene" class="hidden" networked-scene="room: race1; adapter: wseasyrtc; serverURL: https://nafs.glitch.me">
+  <!-- A-Frame Scene (Start with 0 opacity to prevent black screen) -->
+  <a-scene id="gameScene" style="opacity: 0;">
     <a-assets>
-      <template id="avatar-template">
-        
-          <a-sphere class="head" scale="0.2 0.3 0.2" color="#555"></a-sphere>
-          <a-box class="hook" position="0 -0.2 -0.5" scale="0.1 0.1 0.4" color="silver"></a-box>
-        
+      <template id="avatar-tpl">
+        <a-sphere scale="0.2 0.3 0.2"></a-sphere>
       </template>
     </a-assets>
 
     <a-sky color="#050505"></a-sky>
+    <a-plane rotation="-45 0 0" position="0 0 -25" width="20" height="100" color="#222"></a-plane>
+    <a-box class="clickable" position="0 2 -5" color="gold" grapple-point></a-box>
     
-    <!-- THE RAMP -->
     
-      <a-plane rotation="-45 0 0" position="0 0 -25" width="20" height="100" color="#222"></a-plane>
-      <!-- Grapple Points -->
-      <a-box class="clickable" position="0 2 -5" color="gold" grapple-point></a-box>
-      <a-box class="clickable" position="-3 8 -15" color="gold" grapple-point></a-box>
-      <a-box class="clickable" position="3 14 -25" color="gold" grapple-point></a-box>
-      <a-box class="clickable" position="0 20 -35" color="gold" grapple-point></a-box>
-      <!-- Finish Line -->
-      <a-box id="finish" position="0 25 -45" width="20" height="1" depth="2" color="green"></a-box>
-    
-
-    <!-- THE BOT (Enemy) -->
-    
-      <a-sphere scale="0.2 0.3 0.2" color="red"></a-sphere>
-      <a-box position="0 -0.2 -0.5" scale="0.1 0.1 0.4" color="black"></a-box>
-    
-
-    <!-- PLAYER RIG -->
-    
-      <a-camera id="cam">
-        <a-cursor raycaster="objects: .clickable" color="cyan"></a-cursor>
-      </a-camera>
+      <a-camera><a-cursor raycaster="objects: .clickable"></a-cursor></a-camera>
     
   </a-scene>
 
-  <script>
-    // GAME STATE & ECONOMY
-    let coins = parseInt(localStorage.getItem('madness_coins')) || 0;
-    document.querySelectorAll('.coin-val').forEach(el => el.innerText = coins);
-
-    function startGame(mode) {
-      document.getElementById('title-screen').classList.add('hidden');
-      document.getElementById('scene').classList.remove('hidden');
-      document.getElementById('game-ui').classList.remove('hidden');
-      document.getElementById('mode-text').innerText = mode.toUpperCase();
-      
-      if(mode === 'bot') {
-        document.getElementById('bot-racer').classList.remove('hidden');
-        startBotAI();
-      }
-    }
-
-    function toggleShop(show) {
-      document.getElementById('title-screen').classList.toggle('hidden', show);
-      document.getElementById('shop-screen').classList.toggle('hidden', !show);
-    }
-
-    function buySkin(color, price) {
-      if(coins >= price) {
-        coins -= price;
-        localStorage.setItem('madness_coins', coins);
-        alert("Skin Unlocked!");
-        document.querySelectorAll('.coin-val').forEach(el => el.innerText = coins);
-      } else {
-        alert("Not enough coins!");
-      }
-    }
-
-    // HOOK & MOVEMENT LOGIC
-    AFRAME.registerComponent('grapple-point', {
-      init: function () {
-        this.el.addEventListener('click', () => {
-          document.querySelector('#player-rig').emit('pull', { pos: this.el.object3D.position });
-        });
-      }
-    });
-
-    AFRAME.registerComponent('physics-engine', {
-      init: function() {
-        this.target = new THREE.Vector3();
-        this.moving = false;
-        this.el.addEventListener('pull', (e) => {
-          this.target.copy(e.detail.pos);
-          this.moving = true;
-        });
-      },
-      tick: function() {
-        if (!this.moving) return;
-        this.el.object3D.position.lerp(this.target, 0.1);
-        if (this.el.object3D.position.distanceTo(this.target) < 0.5) {
-          this.moving = false;
-          // Check for Win
-          if (this.el.object3D.position.y > 22) {
-            alert("VICTORY! +50 Coins");
-            coins += 50;
-            localStorage.setItem('madness_coins', coins);
-            location.reload(); // Reset to title
-          }
-        }
-      }
-    });
-
-    // BOT AI LOGIC (Simple jump sequence)
-    function startBotAI() {
-      const bot = document.querySelector('#bot-racer');
-      const targets = [[0, 2, -5], [-3, 8, -15], [3, 14, -25], [0, 20, -35], [0, 25, -45]];
-      let i = 0;
-      setInterval(() => {
-        if (i < targets.length) {
-          let t = targets[i];
-          bot.setAttribute('animation', `property: position; to: ${t[0]} ${t[1]} ${t[2]}; dur: 3000; easing: easeInOutQuad`);
-          i++;
-        }
-      }, 4000);
-    }
-  </script>
+  <!-- Load your Logic Files -->
+  <script src="logic.js"></script>
+  <script src="components.js"></script>
 </body>
 </html>
